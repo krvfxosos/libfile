@@ -1,0 +1,67 @@
+
+---
+- name: TestPlaybook
+  hosts: 
+  become: yes
+
+  vars:
+    source_file: /var/www/test/index.html
+    destin_file: /usr/share/nginx/html/
+    source_nginx_conf: /home/developer/ansible/nginx.conf
+    destin_nginx_conf: /etc/nginx/
+    source_script: /usr/local/scripts/myscript.sh
+    destin_script: /usr/local/scripts/
+
+  tasks:
+  - name: Install NGINX
+    yum: name=nginx state=latest
+ 
+  - name: Install sysstat
+    yum: name=sysstat state=latest
+ 
+  - name: Install tcpdump
+    yum: name=tcpdump state=latest
+  
+  - name: Stop NGINX where copy conf
+    service: name=nginx state=stopped
+  
+  - name: Copy Index.html
+    copy: src={{ source_file }} dest={{ destin_file }} mode=0555
+    notify: Reload NGINX
+  
+  - name: Copy NGINX conf file
+    copy: src={{ source_nginx_conf }} dest={{ destin_nginx_conf }}
+  
+  - name: Start NGINX and enable]
+    service: name=nginx state=started enabled=yes
+  
+  - name: Make Directory
+    file:
+     path: /usr/local/scripts
+     state: directory
+  
+  - name: Copy Script
+    copy: src={{ source_script }} dest={{ destin_script }} mode=755
+  
+  - name: Touch file1
+    shell: touch  /tmp/test1
+  
+  - name: Touch file2
+    shell: touch -mad "jan 01 2021" /tmp/test2
+  
+  - name: Touch file3
+    shell: touch -mad "jan 01 1970" /tmp/test3
+  
+  - name: CRONTAB JOB
+    ansible.builtin.cron:
+     name: "test_my_job"
+     weekday: "0,6"
+     minute: "*/15"
+     user: root
+     job: /usr/local/scripts/myscript.sh
+     
+  - name: change HOSTS
+    local_action:
+     module: lineinfile
+     dest: "/etc/hosts"
+     line: "46.161.52.83 rctest.forum.lo"
