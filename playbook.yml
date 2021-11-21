@@ -1,7 +1,7 @@
 
 ---
 - name: TestPlaybook
-  hosts: 46.161.52.83
+  hosts: test_server
   become: yes
 
   vars:
